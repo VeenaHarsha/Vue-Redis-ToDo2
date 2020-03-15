@@ -1,0 +1,6 @@
+.env
+node_modules
+List copy.vue
+List_bkp.vue
+Task_bkp.vue
+client/src/store/index.js
