@@ -1,5 +1,5 @@
 {
-  "name": "api-redis",
+  "name": "node-api-redis",
   "version": "1.0.0",
   "description": "ToDo-Vue-Redis",
   "main": "index.js",

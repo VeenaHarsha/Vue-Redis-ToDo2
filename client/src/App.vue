@@ -1,43 +1,39 @@
 <template>
   <div id="app" class="app-container">
-    <main-header />
-		<list :showList="showList"/>
+    <h2> {{ getVheader }} </h2>
+    <hr>
+    <app-header></app-header>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import Header from './components/layout/Header'
-import List from './components/list/List'
-
+import Header from './components/Header.vue'
+import { mapGetters } from 'vuex'
 export default {
   name: 'App',
-	data(){
-		return {
-      showList: true ,
-		}
-	},
+    computed: {
+    ...mapGetters(['getVheader']),
+   },
   components: {
-    'main-header': Header ,
-    'list': List,
+     appHeader: Header,
   }
 }
 </script>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
-.app-container {
-  max-width: 680px;
-  margin:0 auto;
-}
-
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   margin-top: 60px;
+}
+* {
+  box-sizing: border-box;
+}
+.app-container {
+  max-width: 680px;
+  margin:0 auto;
 }
 </style>
