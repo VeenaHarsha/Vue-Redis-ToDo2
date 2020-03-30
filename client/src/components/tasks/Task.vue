@@ -1,98 +1,160 @@
 <template>
-  <div class='task-main-div'>
-      <div v-show='selectedList'>
-         <h3>Add Tasks For :{{ list.name }} </h3>
-          <input 
-          type='text'
-          class='task-input' 
-          placeholder='Add Task name ..' 
-          v-model='taskName' 
-          @keyup.enter='addTask'
-        />
-        
-        <div
-          v-for='task in tasks'
-          :key='task.id'
-          v-bind:class="{'is-complete':task.completed}"
-        >
-        <div class="task-item">
-          <input type='checkbox' v-on:change='markComplete(task)' />
-          <div class="task-label"  @click='showTaskInfo(task.id)'> {{ task.name }} </div>  
-          <!-- <span> <img @click.stop='editTaskItem(task.id)' src='../../assets/edit.png' /></span> -->
-          <span> <img @click.stop='removeTaskItem(task.id)' src='../../assets/delete.png'/></span>
-        </div>
-        <task-more-info v-show='showTask' :task='task'  :selectedTask='selectedTask' :moreInfo='moreInfo'/>
-      </div>
-      
+  <div class="task-main-div">
+    <div>
+      <strong>Add Tasks For : {{ list.name }}</strong>
+      <input
+        type="text"
+        class="task-input"
+        placeholder="Add Task name .."
+        v-model="name"
+        @keyup.enter="addTask"
+      />
+    </div>
+    <div v-for="task in getterData" :key="task.taskId">
+		<div class="task-item">
+			<input type="checkbox" v-model="task.completed" @click.stop="markComplete(task)" />
+			<div class="task-label" @click.stop="showMoreInfo(task.taskId)">{{ task.name }}</div>
+			<span> <img @click.stop="removeTaskItem(task.taskId)" src="../../assets/delete.png"/> </span>
+		</div>
+		<div v-show="moreInfo && (selectedTask ===  task.taskId)">
+			<div class="task-info-div" @keyup.enter="addTaskMoreInfo(task)">
+				<input type="text" class="task-more-input" v-model="task.name" />
+				<textarea class="task-more-input" v-model="task.notes" cols="20" rows="10"></textarea>
+				<div class='task-pr-date'>
+					<select name="priority" v-model="task.priority">
+						<option value="high">High</option>
+						<option value="medium">Medium</option>
+						<option value="low" selected>Low</option>
+					</select>
+					<input type="date" name="Due Date" id="dueDate" v-model="task.dueDate"/>
+				</div>
+			</div>
+		</div>
     </div>
   </div>
 </template>
 
 <script>
-import TaskMoreInfo from './TaskMoreInfo'
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapActions } from "vuex"
 export default {
-	name: 'Task',
-	components: {'task-more-info': TaskMoreInfo},
-  props: ['list' , 'selectedList'],
+  name: "Task",
+  props: ["list"],
   data() {
     return {
-			tasks:[],
-      taskName: '',
-      selectedTask: '',
-      moreInfo: false
-    };
+		name: '',
+		selectedTask: '',
+		notes:'',
+		priority: '',
+		dueDate: '',
+		completed: false,
+		moreInfo: false
+    }   
   },
-  computed: {},
-	methods:{
-    ...mapMutations(['toggleShowTask']),
-     ...mapGetters(['showTask']),
-		addTask() {
-      this.tasks.push({listid: this.list.id,name: this.taskName, completed:false});
-      this.taskName = ''
-    },
-		markComplete(task){
-			task.completed = !task.completed
-		},
-		removeTaskItem(id){
-      this.tasks = this.tasks.filter(task => task.id !==id)
-		},
-		editTaskItem(task){
-      this.selectedTask = task.id
-    },
-    showTaskInfo(id) {
-      this.selectedTask = id
-      this.toggleShowTask(false)
-      this.moreinfo = true
+  computed: {
+    getterData: function(){
+		const tasks = this.getTaskItems()
+		console.log('Vin Tasks:', tasks)
+		return tasks
     }
-	}
-}
+  },
+  methods: {
+    ...mapGetters(["showTask", "getSelectedList", "getTaskItems"]),
+    ...mapActions(["createTask", "getTasksForSelList", "deleteTaskItem",'submitTaskMoreInfo']),
+
+    addTask() {
+      const task = { 
+        name:this.name,
+        listId:this.list.listId,
+        notes:this.notes,
+        priority:this.priority,
+        dueDate:this.dueDate,
+        completed:this.completed
+       }
+      this.createTask(task)
+      this.name = ""
+    },
+    markComplete(task) {
+		task.completed = !task.completed
+    },
+    removeTaskItem(id) {
+		this.deleteTaskItem(id)
+		this.getTasksForSelList(this.list.listId)
+    },
+    showMoreInfo(id) {
+		this.moreInfo = !this.moreInfo
+		this.selectedTask = id
+		const lid = this.getSelectedList()
+		this.getTasksForSelList(lid)
+    },
+    addTaskMoreInfo(task){
+      const taskInfo = {
+			taskId:task.taskId,
+			name:task.name,
+			notes:task.notes,
+			priority:task.priority, 
+			dueDate:task.dueDate,
+			completed:task.completed
+		}
+			this.submitTaskMoreInfo(taskInfo)
+			this.moreInfo = !this.moreInfo
+    }
+  },
+  created() {
+    this.getTasksForSelList(this.list.listId)
+  },
+  mounted(){
+    this.getTaskItems()
+  }
+};
 </script>
 
 <style scoped>
 .task-main-div {
   width: 100%;
   padding: 5px;
-  margin: 5px;
+}
+.task-item {
+  display: flex;
+  align-items: center;
+  border:1px dotted #ccc;
+  font-size: 14px;
+}
+.task-item span > img{
+  float: right;
 }
 .task-input {
   border: 1px solid #ccc;
   padding: 10px;
   width: 100%;
-  margin-bottom: 18px;
+  margin: 8px 0;
 }
 .task-label {
+  padding: 0.5rem;
+  border: 1px solid white;
+  width:40rem;
   font-size: 14px;
-  word-wrap: break-word;
-}
-.task-item {
-  /* display: inline-flex; */
-  margin-bottom: 12px;
-  width: 550px;
-  font-size: 14px;
-  justify-content: space-between;
 }
 .is-complete {
   text-decoration: line-through;
+}
+.task-info-div {
+  justify-content: center;
+  width: 80%;
+  border: 1px solid #ccc;
+  margin-top:0.25rem;
+}
+.task-more-input {
+ border: 1px solid #ccc;
+ display: flex;
+ flex-direction: column;
+  padding: 10px;
+  width: 75%;
+  margin: 10px;
+}
+.task-pr-date {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 10px;
 }
 </style>

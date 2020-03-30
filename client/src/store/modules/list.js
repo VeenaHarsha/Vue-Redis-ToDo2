@@ -3,28 +3,31 @@ const state = {
   vheader: 'VeenaS To Do',
   lists: [],
   showList: true,
-  showTask: false
+  showTask: false,
+  selectedList: ''
 }
 
 const getters = {
   getVheader: state => state.vheader + ' App',
   getLists: state => state.lists,
   showList: state => state.showList,
-  showTask: state => state.showTask
+  showTask: state => state.showTask,
+  getSelectedList: state => state.selectedList
 }
 
 const mutations = {
-  addListItem: (state, payLoad) => {
-    state.lists.push(payLoad.name)
+  addListItem: (state, data) => {
+    state.lists.push(data.name)
   },
-  deleteListItem: (state, payLoad) => {
-    state.lists = state.lists.filter(list => list.id !== payLoad)
+  deleteListItem: (state, data) => {
+    state.lists = state.lists.filter(list => list.id !== data)
   },
-  updateListItem: (state, payLoad) => {
-    state.lists[payLoad.listId] = payLoad.name
+  updateListItem: (state, data) => {
+    state.lists[data.listId] = data.name
   },
   toggleShowList: (state, data) => (state.showList = data),
   toggleShowTask: (state, data) => (state.showTask = data),
+  setSelectedList: (state, data) => (state.selectedList = data),
   setLists: (state, data) => (state.lists = data.lists)
 }
 
@@ -39,11 +42,8 @@ const actions = {
       body: JSON.stringify({ name: payLoad })
     }
     const response = await window.fetch(baseUrl + 'list', options)
-    const responseOK = response && response.ok
-    if (responseOK) {
-      const data = await response.json()
-      commit('addListItem', data)
-    }
+    const data = await response.json()
+    commit('addListItem', data)
   },
   getListItems: async function ({ commit }) {
     const response = await window.fetch(baseUrl + 'list')
@@ -51,7 +51,9 @@ const actions = {
     commit('setLists', data)
   },
   deleteList: async function ({ commit }, payLoad) {
-    const options = { method: 'DELETE' }
+    const options = {
+      method: 'DELETE'
+    }
     const response = await window.fetch(baseUrl + 'list/' + payLoad, options)
     const data = await response.text()
     commit('deleteListItem', data)

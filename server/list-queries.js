@@ -1,25 +1,4 @@
-const redis = require('redis')
-const client = redis.createClient()
-
-const { promisify } = require('util')
-
-const get = promisify(client.get).bind(client)
-const hmset = promisify(client.hmset).bind(client)
-const incr = promisify(client.incr).bind(client)
-const rpush = promisify(client.rpush).bind(client)
-const lrange = promisify(client.lrange).bind(client)
-const lrem = promisify(client.lrem).bind(client)
-const hset = promisify(client.hset).bind(client)
-const hexists = promisify(client.hexists).bind(client)
-const hget = promisify(client.hget).bind(client)
-
-client.on('connect', () => {
-  console.log('Redis Ready!!!')
-})
-
-client.on('error', err => {
-  console.log(err)
-})
+const { get, hmset, incr, rpush, lrange, lrem, hset, hexists, hget } = require('./redis.client')
 
 const getList = async (req, res) => {
   try {
@@ -35,27 +14,49 @@ const getList = async (req, res) => {
     res.status(500).json({ error: 'There was an error while connecting. Please try again later' })
   }
 }
-
+// } catch (err) {
+//   res.status(500).json({ error: 'There was an error while connecting. Please try again later' })
+// }
 const createList = async (req, res) => {
   const { name } = req.body
   try {
-    const listId = await get('listCount')
+    let listId = await get('listCounter')
+    if (!listId) {
+      listId = await incr('listCounter')
+    }
     await hmset(listId, 'name', name)
     await rpush('listIds', listId)
-    await incr('listCount')
+    await incr('listCounter')
     res.status(200).json({ name: name })
   } catch (err) {
-    res.status(500).json({ error: 'There was an error nnnn while connecting. Please try again later' })
+    if (!err.response) {
+      // network error
+      this.errorStatus = 'Error: Network Error'
+    } else {
+      this.errorStatus = err.response.data.message
+    }
   }
 }
 
 const deleteList = async (req, res) => {
+  const { id } = req.params
   try {
-    const { id } = req.params
+    const taskIds = await lrange('taskIds', 0, -1)
+    for (const taskId of taskIds) {
+      const lId = await hget(taskId, 'listId')
+      if (lId === id) {
+        await lrem('taskIds', -1, taskId)
+      }
+    }
     await lrem('listIds', -1, id)
     res.status(200).json({ deleted: true })
   } catch (err) {
-    res.status(500).json({ err: 'Error!!' })
+    if (!err.response) {
+      // network error
+      this.errorStatus = 'Error: Network Error'
+    } else {
+      this.errorStatus = err.response.data.message
+    }
   }
 }
 
@@ -70,7 +71,12 @@ const updateList = async (req, res) => {
     list = await hset(id, 'name', name)
     res.status(200).json({ listId: id, name: name })
   } catch (err) {
-    res.status(500).json({ err: 'Error!!' })
+    if (!err.response) {
+      // network error
+      this.errorStatus = 'Error: Network Error'
+    } else {
+      this.errorStatus = err.response.data.message
+    }
   }
 }
 

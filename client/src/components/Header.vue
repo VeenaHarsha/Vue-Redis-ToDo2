@@ -20,12 +20,9 @@ ul {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: rgb(209, 237, 241);
-   text-align: center;
-}
-
-li {
-  float:left;
+  /* background-color: rgb(209, 237, 241); */
+  background-color: lightgrey;
+  text-align: center;
 }
 
 li {
@@ -33,17 +30,20 @@ li {
   color: black;
   font-weight: bold;
   text-align: center;
-  padding: 14px 16px;
+  /* padding: 14px 16px; */
+  padding: 0.8rem;
   text-decoration: none;
- 
+  float:left;
 }
 
 li .active {
-  background-color: rgb(103, 232, 236);
+  /* background-color: rgb(103, 232, 236); */
+  background-color: gray;
 }
 
 .active {
-  background-color: rgb(148, 240, 243);
+  /* background-color: rgb(148, 240, 243); */
+  background-color:#80808057;
   border-radius: 5px;
   }
 </style>

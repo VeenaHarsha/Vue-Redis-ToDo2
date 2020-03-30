@@ -1,6 +1,5 @@
 <template>
   <div class='l-main-div'>
-    <div>
       <input
         v-show='showList()'
         type='text'
@@ -10,7 +9,6 @@
         @keyup.enter='addListItem'
       />
     <list-items v-for='list in searchLists' :key='list.listId' :list='list' />
-    </div>
   </div>
 </template>
 
@@ -22,8 +20,6 @@ export default {
   data() {
     return {
       listName: '',
-      editable: false,
-      selectedList: ''
     }
   },
   components: { 'list-items': ListItems },
@@ -52,26 +48,14 @@ export default {
   .l-main-div {
     width: 100%;
     padding: 5px;
-    margin: 5px;
-    border: 1px solid #ccc;
+    /* margin: 5px; */
+    /* border: 1px solid #ccc; */
   }
   .list-input {
     border: 1px solid #ccc;
     padding: 10px;
     width: 100%;
-    margin-bottom: 18px;
+    margin-bottom: 0.5rem;
   }
-  .list-items {
-    display: flex;
-    margin-bottom: 12px;
-    margin-left: 12px;
-    align-items: center;
-    font-size: 14px;
-    justify-content: space-between;
-  }
-  .list-label {
-    width: 80%;
-    font-size: 14px;
-    word-wrap: break-word;
-  }
+ 
 </style>
