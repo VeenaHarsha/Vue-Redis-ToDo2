@@ -3,7 +3,7 @@
     <h2> {{ getVheader }} </h2>
     <hr>
     <app-header></app-header>
-    <router-view></router-view>
+    <router-view></router-view> 
   </div>
 </template>
 
@@ -34,7 +34,7 @@ export default {
   box-sizing: border-box;
 }
 .app-container {
-  max-width: 680px;
+  max-width:  680px; 
   margin:0 auto;
 }
 </style>

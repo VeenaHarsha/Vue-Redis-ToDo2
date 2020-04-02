@@ -13,15 +13,30 @@ const getters = {
 
 const mutations = {
   addTaskItem: (state, data) => state.tasks.push(data),
-  setTasks: (state, data) => (state.tasks = data.tasks),
-  deleteTask: (state, data) => (state.tasks = state.tasks.filter(task => task.taskId !== data)),
-  taskMoreInfo: (state, data) => state.tasks.push(data),
-  setScheduledTasks: (state, data) => (state.schTasks = data.schTasks)
+  setTasks: (state, data) => {
+    data.tasks.forEach(task => {
+      task.completed = (task.completed === 'false') ? !task.completed : task.completed
+    })
+    state.tasks = data.tasks
+  },
+  deleteTask: (state, data) => {
+    state.tasks = state.tasks.filter(task => task.taskId !== data)
+  },
+  taskMoreInfo: (state, data) => {
+    state.tasks[data.taskId] = data
+  },
+  setScheduledTasks: (state, data) => {
+    data.schTasks.forEach(task => {
+      task.completed = (task.completed === 'false') ? !task.completed : task.completed
+    })
+    state.schTasks = data.schTasks
+  }
 }
 
 const actions = {
   createTask: async ({ commit }, payLoad) => {
     const { name, listId, notes, priority, dueDate, completed } = payLoad
+
     const options = {
       method: 'POST',
       headers: {
@@ -44,34 +59,31 @@ const actions = {
     const options = {
       method: 'DELETE'
     }
-    const response = await window.fetch(baseUrl + 'tasks/' + payLoad, options)
-    const data = await response.text()
-    commit('deleteTask', data)
+    await window.fetch(baseUrl + 'tasks/' + payLoad, options)
+    commit('deleteTask', payLoad)
   },
   submitTaskMoreInfo: async ({ commit }, payLoad) => {
-    const { taskId, name, notes, priority, dueDate, completed } = payLoad
+    // const { taskId, name, notes, priority, dueDate, completed } = payLoad
+    const { taskId, task } = payLoad
     const options = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json;charset=UTF-8'
       },
-      body: JSON.stringify({ taskId: taskId, name: name, notes: notes, priority: priority, dueDate: dueDate, completed: completed })
+      body: JSON.stringify({ taskId: taskId, name: task.name, notes: task.notes, priority: task.priority, dueDate: task.dueDate, completed: task.completed })
     }
     const response = await window.fetch(baseUrl + 'tasks/' + taskId, options)
-    const data = await response.json()
+    const data = await response.text()
     commit('taskMoreInfo', data)
   },
   getAllTasks: async ({ commit }) => {
     const response = await window.fetch(baseUrl + 'tasks/')
     const data = await response.json()
-    console.log('From task.js:', data.tasks)
     commit('setTasks', data)
   },
   getTodayTasks: async ({ commit }) => {
-    console.log('Am Inside getTodayTasks')
     const response = await window.fetch(baseUrl + 'today/tasks')
     const data = await response.json()
-    console.log('From Task.js, Todays Tasks:', data.schTasks)
     commit('setScheduledTasks', data)
   },
   getSchTasks: async ({ commit }) => {

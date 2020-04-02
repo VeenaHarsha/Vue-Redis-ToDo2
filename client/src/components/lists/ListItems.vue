@@ -1,33 +1,31 @@
 <template>
   <div>
-    <div class="list-items" v-show="showList()">
-      <div
-        v-show="!editable"
-        class="list-label"
-        @click.stop="showTasksComp(list.listId)"
-      >{{ list.name }}</div>
-      <input
-        type="text"
-        v-show="editable"
-        @blur="updateListItem( selectedList, list.name )"
-        @keyup.enter="updateListItem( selectedList, list.name )"
-        class="list-edit"
-        v-model="list.name"
-      />
-      <span>
-        <img @click="editListItem(list.listId)" src="../../assets/edit.png" />
-      </span>
-      <span>
-        <img @click="removeListItem(list.listId)" src="../../assets/delete.png" />
-      </span>
-    </div>
-    <task-item :list="list" v-if="(getSelectedList() === list.listId) && showTask()" />
+		<div class="list-items" v-show="showList()">
+			<div
+				v-show="!editable"
+				class="list-label"
+				@click.stop="showTasksComp(list.listId)"
+			>{{ list.name }}</div>
+			<input
+				type="text"
+				v-show="editable"
+				@blur="updateListItem( selectedList, list.name )"
+				@keyup.enter="updateListItem( selectedList, list.name )"
+				class="list-edit"
+				v-model="list.name"
+			/>
+			<img @click="editListItem(list.listId)" src="../../assets/edit.png" />
+			<img @click="deleteList(list.listId)" src="../../assets/delete.png" />
+		</div>
+		<!-- <task-item :list="list" v-if="(getSelectedList() === list.listId) && showTask()" /> -->
+		<task-item :list="list" v-if="(getSelectedList() === list.listId) && showTask()" />
+		
   </div>
 </template>
 
 <script>
-import Task from "../tasks/Task";
-import { mapGetters, mapActions, mapMutations } from "vuex";
+import Task from "../tasks/Task"
+import { mapGetters, mapActions, mapMutations } from "vuex"
 
 export default {
   name: "ListItems",
@@ -40,33 +38,28 @@ export default {
   computed: {},
   components: { "task-item": Task },
   methods: {
-    ...mapGetters(["getLists", "showList", "showTask", "getSelectedList"]),
+    ...mapGetters(["showList", "showTask", "getSelectedList"]),
     ...mapActions(["deleteList", "getListItems", "updateList"]),
     ...mapMutations(["toggleShowList", "toggleShowTask", "setSelectedList"]),
 
     showTasksComp(listId) {
-      this.setSelectedList(listId);
-      this.toggleShowList(false);
-      this.toggleShowTask(true);
-    },
-
-    removeListItem(listId) {
-      this.deleteList(listId);
-      this.getListItems();
+		this.setSelectedList(listId)
+		this.toggleShowList(false)
+		this.toggleShowTask(true)
     },
 
     editListItem(listId) {
-      this.editable = true;
-      this.selectedList = listId;
+		this.editable = true
+		this.selectedList = listId
     },
 
     updateListItem(lId, name) {
-      this.updateList({ id: lId, name: name });
-      this.editable = false;
+		this.updateList({ id: lId, name: name })
+		this.editable = false
     }
   },
-  created() {
-    this.getListItems();
+created() {
+      this.getListItems()
   }
 };
 </script>

@@ -1,7 +1,6 @@
 const { get, hgetall, hget, hmset, incr, rpush, lrange, lrem, hexists } = require('./redis.client')
 
 const getTasksForList = async (req, res) => {
-  console.log('Here Am 1')
   try {
     const { listid } = req.params
     const taskIds = await lrange('taskIds', 0, -1)
@@ -20,7 +19,6 @@ const getTasksForList = async (req, res) => {
 }
 const getAllTasks = async (req, res) => {
   try {
-    console.log('Here Am 12')
     const taskIds = await lrange('taskIds', 0, -1)
     if (!taskIds.length) return res.status(200).json({ taskCount: 0, tasks: [] })
     const allTasks = []
@@ -28,7 +26,6 @@ const getAllTasks = async (req, res) => {
       const task = await hgetall(taskId)
       allTasks.push({ taskId: taskId, ...task })
     }
-    console.log('allTasks:', allTasks)
     res.status(200).json({ taskCount: taskIds.length, tasks: allTasks })
   } catch (err) {
     res.status(500).json({ error: 'Error while Connecting!' })
@@ -36,7 +33,6 @@ const getAllTasks = async (req, res) => {
 }
 
 const getTodayTasks = async (req, res) => {
-  console.log('Am In Today..getTodayTasks')
   const today = new Date()
   const dd = String(today.getDate()).padStart(2, '0')
   const mm = String(today.getMonth() + 1).padStart(2, '0')
@@ -50,13 +46,10 @@ const getTodayTasks = async (req, res) => {
       const task = await hgetall(taskId)
       const listId = task.listId // await hget(taskId, 'listId')
       const listName = await hget(listId, 'name')
-      console.log('Vinn: ', task, ':', currDate, ':', listName)
       if (task.dueDate === currDate) {
-        console.log('Task is : ', task)
         allSchTasks.push({ taskId: taskId, listName: listName, name: task.name, completed: task.completed, dueDate: task.dueDate })
       }
     }
-    console.log('Checking SchTasks:', allSchTasks)
     res.status(200).json({ taskCount: taskIds.length, schTasks: allSchTasks })
   } catch (err) {
     res.status(500).json({ error: 'Error while Connecting!' })
@@ -68,12 +61,13 @@ const getSchTasks = async (req, res) => {
     if (!taskIds.length) return res.status(200).json({ taskCount: 0, schTasks: [] })
     const allSchTasks = []
     for (const taskId of taskIds) {
-	  const task = await hgetall(taskId)
-	  const listId = task.listId
+      const task = await hgetall(taskId)
+      const listId = task.listId
       const listName = await hget(listId, 'name')
-      allSchTasks.push({ taskId: taskId, listName: listName, name: task.name, completed: task.completed, dueDate: task.dueDate })
+      if (task.dueDate) {
+        allSchTasks.push({ taskId: taskId, listName: listName, name: task.name, completed: task.completed, dueDate: task.dueDate })
+      }
     }
-    console.log('Checking SchTasks:', allSchTasks)
     res.status(200).json({ taskCount: taskIds.length, schTasks: allSchTasks })
   } catch (err) {
     res.status(500).json({ error: 'Error while Connecting!' })
@@ -86,7 +80,7 @@ const createTask = async (req, res) => {
     await hmset(taskId, 'name', name, 'listId', listId, 'notes', notes, 'priority', priority, 'dueDate', dueDate, 'completed', completed)
     await rpush('taskIds', taskId)
     await incr('taskCounter')
-    res.status(200).json({ name: name, listId: listId, notes: notes, priority: priority, dueDate: dueDate, completed: completed })
+    res.status(200).json({ taskId: taskId, name: name, listId: listId, notes: notes, priority: priority, dueDate: dueDate, completed: completed })
   } catch (err) {
     res.status(500).json({ error: 'Error while Connecting!' })
   }
@@ -99,7 +93,7 @@ const updateTask = async (req, res) => {
       return res.status(404).json({ error: 'Task not present!' })
     }
     await hmset(taskId, 'name', name, 'notes', notes, 'priority', priority, 'dueDate', dueDate, 'completed', completed)
-    res.status(200).json({ name: name, notes: notes, priority: priority, dueDate: dueDate, completed: completed })
+    res.status(200).json({ taskId, name: name, notes: notes, priority: priority, dueDate: dueDate, completed: completed })
   } catch (err) {
     res.status(500).json({ error: 'Error while Connecting!' })
   }

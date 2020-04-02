@@ -1,6 +1,6 @@
 const baseUrl = 'http://localhost:4000/'
 const state = {
-  vheader: 'VeenaS To Do',
+  vheader: 'To Do App',
   lists: [],
   showList: true,
   showTask: false,
@@ -8,7 +8,7 @@ const state = {
 }
 
 const getters = {
-  getVheader: state => state.vheader + ' App',
+  getVheader: state => state.vheader ,
   getLists: state => state.lists,
   showList: state => state.showList,
   showTask: state => state.showTask,
@@ -20,7 +20,7 @@ const mutations = {
     state.lists.push(data.name)
   },
   deleteListItem: (state, data) => {
-    state.lists = state.lists.filter(list => list.id !== data)
+    state.lists = state.lists.filter(list => list.listId !== data)
   },
   updateListItem: (state, data) => {
     state.lists[data.listId] = data.name
@@ -54,9 +54,8 @@ const actions = {
     const options = {
       method: 'DELETE'
     }
-    const response = await window.fetch(baseUrl + 'list/' + payLoad, options)
-    const data = await response.text()
-    commit('deleteListItem', data)
+    await window.fetch(baseUrl + 'list/' + payLoad, options)
+    commit('deleteListItem', payLoad)
   },
   updateList: async function ({ commit }, payLoad) {
     const options = {
